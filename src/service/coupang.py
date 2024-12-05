@@ -12,14 +12,19 @@ from src.repository.coupang_repository import saveCoupangData
 def run():
     coupangData = [
         {
-            "productName": "상품1",
-            "price": 10000,
-            "productImgUrl": "https://~~~~~"
-        },
-        {
-            "productName": "상품2",
-            "price": 20000,
-            "productImgUrl": "https://~~~~~"
+            "category": "카테고리",
+            "product": [
+                {
+                    "productName": "상품1",
+                    "price": 10000,
+                    "productImgUrl": "https://~~~~~"
+                },
+                {
+                    "productName": "상품2",
+                    "price": 20000,
+                    "productImgUrl": "https://~~~~~"
+                }
+            ]
         }
     ]
 

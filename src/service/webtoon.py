@@ -6,6 +6,9 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from webdriver_manager.chrome import ChromeDriverManager
 
+from src.repository.tms_repository import findBoard
+from src.repository.webtoonRepository import save, saveWebtoonDataList, saveAuthor
+
 def run():
     webtoonDataList = [
         {
@@ -13,15 +16,15 @@ def run():
             "webtoons": [
                 {
                     "title": "참교육",
-                    "author": "채용택 / 한가림",
+                    "author": "채용택 / 한가람",
                     "rating": 9.89,
-                    "imgUrl": "https://~~~~~"
+                    "imgUrl": "https://~~~~~~"
                 },
                 {
                     "title": "똑 닮은 딸",
                     "author": "이담",
-                    "rating": 9.89,
-                    "imgUrl": "https://~~~~~"
+                    "rating": 9.98,
+                    "imgUrl": "https://~~~~~~"
                 }
             ]
         }
@@ -30,35 +33,31 @@ def run():
     webtoonDataList.clear()
 
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
+
     driver.get("https://comic.naver.com/webtoon")
     driver.maximize_window()
-    sleep(0.5) # 5초 후에 실행 꺼짐
-
-    webtoonList = []
+    sleep(1)
 
     categoryLis = driver.find_elements(
         by=By.CSS_SELECTOR,
         value='#wrap > header > div.SubNavigationBar__snb_wrap--A5gfM > nav > ul > li'
     )
 
-    for categoryLi in categoryLis[1:8]:
+    for categoryLi in categoryLis[1:3]:
         categoryLink = categoryLi.find_element(by=By.CSS_SELECTOR, value="& > a")
         categoryLink.click()
-        sleep(0.1)
+        sleep(0.5)
 
-        webtoonDataOfCategory = { # dic 만들어 서 하나로 묶이
+        webtoonDataOfCategory = {
             "categoryName": categoryLink.text,
             "webtoons": []
         }
 
-        # webtoonTitles = driver.find_elements(by=By.CSS_SELECTOR, value='#content > div:nth-child(1) > ul > li > div > a > span')
-        # for webtoonTitle in webtoonTitles:
-        #     print(webtoonTitle.text)
         webtoonLis = driver.find_elements(by=By.CSS_SELECTOR, value="#content > div:nth-child(1) > ul > li")
         for webtoonLi in webtoonLis:
             driver.execute_script("arguments[0].scrollIntoView(true);", webtoonLi)
-            imgUrl = webtoonLi.find_element(by=By.CSS_SELECTOR, value="& > a > div > img")
-            imgSrc = imgUrl.get_attribute("src")
+            img = webtoonLi.find_element(by=By.CSS_SELECTOR, value="& > a > div > img")
+            imgSrc = img.get_attribute("src")
             title = webtoonLi.find_element(by=By.CSS_SELECTOR, value="& > div > a:nth-of-type(1)")
             titleText = title.text
             author = webtoonLi.find_element(by=By.CSS_SELECTOR, value="& > div .ContentAuthor__author--CTAAP")
@@ -72,39 +71,13 @@ def run():
                 "imgUrl": imgSrc
             }
             webtoonDataOfCategory["webtoons"].append(webtoon)
-        webtoonList.append(webtoonDataOfCategory)  # 반복이 돌 때마다 append 된다.
+        webtoonDataList.append(webtoonDataOfCategory)
 
     print(webtoonDataList)
+    # saveWebtoonDataList(webtoonDataList)
+    saveAuthor(webtoonDataList)
+    findBoard(title=webtoonDataList[0]["title"])
 
-
-def run2():
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
-
-    driver.get("https://comic.naver.com/webtoon")
-    sleep(1)
-
-    days = driver.find_elements(
-        by=By.CSS_SELECTOR,
-        value= '#wrap > header > div.SubNavigationBar__snb_wrap--A5gfM > nav > ul > li > a'
-    )
-
-    for day in days[1:8]:
-        driver.execute_script("arguments[0].scrollIntoView(true);", day)
-        day.click()
-        print(day.text)
-
-
-
-
-            # print(title.text)
-
-
-        # webtoonAuthors = driver.find_elements(
-        #     by=By.CSS_SELECTOR,
-        #     value='#container > div.ListSpot__spot_wrap--Iko15 > div.content > div > ul > li > div > a'
-        # )
-        # for webtoonAuthor in webtoonAuthors:
-        #     print(webtoonAuthor.text)
 
 
 def run3():
@@ -112,7 +85,7 @@ def run3():
 
     driver.get("https://kr.stussy.com/collections/new-arrivals")
     driver.maximize_window()
-
+    sleep(1)
 
     categories = driver.find_elements(
         by=By.CSS_SELECTOR,
@@ -128,30 +101,19 @@ def run3():
         print(f"카테고리: {categoryName}")
 
         driver.execute_script("arguments[0].scrollIntoView(true);", categories[i])
-        driver.execute_script("arguments[0].click()", categories[i])
+        driver.execute_script("arguments[0].click();", categories[i])
         sleep(0.1)
 
-        # nameAndPrices = driver.find_elements(
-        #     by = By.CSS_SELECTOR,
-        #     value='#shopify-section-template--14469189140535__product-grid > s-collection-grid > div > ul > li> div > div'
-        # )
-        #
-        # for nameAndPrice in nameAndPrices[0:4]:
-        #     print(nameAndPrice.text)
 
-        productLis = driver.find_elements(
-            by=By.CSS_SELECTOR,
-            value='#shopify-section-template--14469189140535__product-grid > s-collection-grid > div.collection-grid__layout.px-sm.pt-md.pb-xl.tabletp\:px-md > ul > li'
-        )
+        productLis = driver.find_elements(by=By.CSS_SELECTOR, value='#shopify-section-template--14469189140535__product-grid > s-collection-grid > div.collection-grid__layout.px-sm.pt-md.pb-xl.tabletp\:px-md > ul > li')
         for productLi in productLis[:4]:
             productImg = productLi.find_element(by=By.CSS_SELECTOR, value='div > a > div > img')
             productImgSrc = productImg.get_attribute('src')
-            productName =productLi.find_element(by=By.CSS_SELECTOR, value='div > div > div:nth-of-type(1)')
+            productName = productLi.find_element(by=By.CSS_SELECTOR, value='div > div > div:nth-of-type(1)')
             productNameText = productName.text
             productPrice = productLi.find_element(by=By.CSS_SELECTOR, value='div > div > div:nth-of-type(2)')
             productPriceText = productPrice.text
             print(f'상품명: {productNameText}, 가격: {productPriceText}, URL: {productImgSrc}')
-
 
 def run4():
     products = []
@@ -160,7 +122,7 @@ def run4():
 
     driver.get("https://kr.stussy.com/collections/new-arrivals")
     driver.maximize_window()
-
+    sleep(1)
 
     categories = driver.find_elements(
         by=By.CSS_SELECTOR,
@@ -180,25 +142,15 @@ def run4():
         }
 
         driver.execute_script("arguments[0].scrollIntoView(true);", categories[i])
-        driver.execute_script("arguments[0].click()", categories[i])
+        driver.execute_script("arguments[0].click();", categories[i])
         sleep(0.1)
 
-        # nameAndPrices = driver.find_elements(
-        #     by = By.CSS_SELECTOR,
-        #     value='#shopify-section-template--14469189140535__product-grid > s-collection-grid > div > ul > li> div > div'
-        # )
-        #
-        # for nameAndPrice in nameAndPrices[0:4]:
-        #     print(nameAndPrice.text)
 
-        productLis = driver.find_elements(
-            by=By.CSS_SELECTOR,
-            value='#shopify-section-template--14469189140535__product-grid > s-collection-grid > div.collection-grid__layout.px-sm.pt-md.pb-xl.tabletp\:px-md > ul > li'
-        )
+        productLis = driver.find_elements(by=By.CSS_SELECTOR, value='#shopify-section-template--14469189140535__product-grid > s-collection-grid > div.collection-grid__layout.px-sm.pt-md.pb-xl.tabletp\:px-md > ul > li')
         for productLi in productLis[:4]:
             productImg = productLi.find_element(by=By.CSS_SELECTOR, value='div > a > div > img')
             productImgSrc = productImg.get_attribute('src')
-            productName =productLi.find_element(by=By.CSS_SELECTOR, value='div > div > div:nth-of-type(1)')
+            productName = productLi.find_element(by=By.CSS_SELECTOR, value='div > div > div:nth-of-type(1)')
             productNameText = productName.text
             productPrice = productLi.find_element(by=By.CSS_SELECTOR, value='div > div > div:nth-of-type(2)')
             productPriceText = productPrice.text
@@ -206,12 +158,15 @@ def run4():
             categoryDict['productList'].append({
                 "productName": productNameText,
                 "productPrice": productPriceText,
-                "productImg": productImgSrc
+                "productImg": productImgSrc,
             })
 
         products.append(categoryDict)
-    with open('product.json', 'w', encoding='utf-8') as f:
-        json.dump(products, f, ensure_ascii=False, indent=4) #dump
+    with open('products.json', 'w', encoding='utf-8') as f:
+        json.dump(products, f, ensure_ascii=False, indent=4)
+
+
+
 
 
 

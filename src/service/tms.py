@@ -5,7 +5,16 @@ from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.common.by import By
 
+from src.repository.tms_repository import findBoard
+
+
 def run():
+    title = input("웹툰 제목을 입력하세요:")
+    foundwebtoon = findBoard(title)
+    print(foundwebtoon)
+
+    if not foundwebtoon:
+        return
 
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
     driver.get("https://koritbs.cafe24.com/student/index.php")
@@ -41,12 +50,12 @@ def run():
     sleep(1)
 
     postContentInput = driver.find_element(by=By.CSS_SELECTOR, value='body > table > tbody > tr:nth-child(2) > td:nth-child(2) > form > table > tbody > tr:nth-child(2) > td:nth-child(2) > div > div.ck.ck-editor__main > div')
-    postContentInput.send_keys("게시글 등록하기 완료")
+    postContentInput.send_keys("")
     sleep(1)
 
-    postComplete = driver.find_element(by=By.CSS_SELECTOR, value='body > table > tbody > tr:nth-child(2) > td:nth-child(2) > form > table > tbody > tr.end > td > button')
-    postComplete.click()
-    sleep(1)
+    # postComplete = driver.find_element(by=By.CSS_SELECTOR, value='body > table > tbody > tr:nth-child(2) > td:nth-child(2) > form > table > tbody > tr.end > td > button')
+    # postComplete.click()
+    # sleep(1)
 
 
 
